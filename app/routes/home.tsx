@@ -3,8 +3,6 @@ import type { Route } from "./+types/home";
 import { ArrowRight, Layers } from "lucide-react";
 import { Button } from "components/ui/Button";
 
-import 'app/app.css'
-
 export function meta({}: Route.MetaArgs) {
   return [
     { title: "New React Router App" },
@@ -14,7 +12,7 @@ export function meta({}: Route.MetaArgs) {
 
 export default function Home() {
   return (
-    <div>
+    <div className="home">
       <Navbar />
       <section className="hero">
         <div className="announce">
