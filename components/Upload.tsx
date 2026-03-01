@@ -11,20 +11,23 @@ type UploadProps = {
     onComplete?: (base64: string) => void;
 };
 
+const MAX_UPLOAD_SIZE_BYTES = 50 * 1024 * 1024;
+const ACCEPTED_TYPES = new Set(["image/jpeg", "image/png"]);
+
 export default function Upload({ onComplete }: UploadProps) {
     const [file, setFile] = useState<File | null>(null);
     const [isDragging, setIsDragging] = useState(false);
     const [progress, setProgress] = useState(0);
 
     const intervalRef = useRef<number | null>(null);
+    const redirectTimeoutRef = useRef<number | null>(null);
 
     const { isSignedIn } = useOutletContext<AuthContext>();
 
     useEffect(() => {
         return () => {
-            if (intervalRef.current) {
-                clearInterval(intervalRef.current);
-            }
+            if (intervalRef.current) clearInterval(intervalRef.current);
+            if(redirectTimeoutRef.current) clearInterval(redirectTimeoutRef.current);
         };
     }, []);
 
@@ -67,6 +70,8 @@ export default function Upload({ onComplete }: UploadProps) {
     }
 
     function onFileSelected(f: File) {
+        if (!ACCEPTED_TYPES.has(f.type)) return;
+        if (f.size > MAX_UPLOAD_SIZE_BYTES) return;
         setFile(f);
         setProgress(0);
         processFile(f);
@@ -89,7 +94,7 @@ export default function Upload({ onComplete }: UploadProps) {
                             clearInterval(intervalRef.current);
                             intervalRef.current = null;
                         }
-                        setTimeout(() => {
+                        redirectTimeoutRef.current = window.setTimeout(() => {
                             onComplete && onComplete(result);
                         }, REDIRECT_DELAY_MS);
                     }
